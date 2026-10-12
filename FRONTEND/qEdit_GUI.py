@@ -6,6 +6,22 @@ from PyQt6.QtWidgets import (
     QLineEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget,
 )
 
+from question import MultipleChoice,TrueOrFalse
+
+#-----------------------------------------------------------------------------
+# Question types
+#----------------------------------------------------------------------------
+
+TYPE_NAMES = {
+    "Multiple_Choice" : "Multiple Choice",
+    "True_or_False" : "True or False"
+}
+TYPE_KEYS = {text:key for key,text in TYPE_NAMES.items()}
+QUESTION_CLASSES  = {
+    "Multiple_Choice" : MultipleChoice,
+    "True_or_False" : TrueOrFalse
+}
+
 # ---------------------------------------------------------------------------
 # Theme colors
 # ---------------------------------------------------------------------------
@@ -33,6 +49,11 @@ STYLE = f"""
 }}
 #cardBar QSpinBox {{
     background: transparent; color: white; border: none; font-size: 14px;
+}}
+
+#option{{
+    background: white; color: black; border: none;
+    border-radius: 15px; padding: 9px 20px; font-size: 14px;
 }}
 
 #questionEdit {{
@@ -79,7 +100,6 @@ QPushButton#round {{
 }}
 """
 
-
 def pill(text, name="pill"):
     b = QPushButton(text)
     b.setObjectName(name)
@@ -101,9 +121,7 @@ def clear_layout(layout):
         if item.widget():
             item.widget().deleteLater()
 
-
 class QuizEditor(QWidget):
-
     def __init__(self, quiz_name="Quiz name", subject="Subject name"):
         super().__init__()
         self.setObjectName("root")
@@ -113,8 +131,14 @@ class QuizEditor(QWidget):
 
         # Option rows are rebuilt often; keep references to the current ones
         self.option_edits = []
+        self.option_radio = []
         self.option_group = QButtonGroup(self)
+        self.maxOptions = 4
         self.qType = "Multiple_Choice"
+
+        #question tracking
+        self.questions = []
+        self.current = 0
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
@@ -131,22 +155,31 @@ class QuizEditor(QWidget):
 
         self.setStyleSheet(STYLE)
 
+        self.questions = [self.new_question("Multiple_Choice")]
+        self.load_question(0)
+
     #Connected options
     def add_option(self):
+        if (len(self.option_edits) >= self.maxOptions):
+            return
+        self._add_option_row()
+        self._update_add_option_state()
+           
+    def _add_option_row(self):
         row = QHBoxLayout()
         row.setContentsMargins(0,0,0,0)
         select_btn = QRadioButton()
         select_btn.setToolTip("Set as correct option")
-        self.option_group.addButton(select_btn,len(self.option_edits) - 1)
+        self.option_group.addButton(select_btn)
         #add function that sets it correct
         option_name = QLineEdit()
-        option_name.setObjectName("navItem")
+        option_name.setObjectName("option")
         option_name.setPlaceholderText("Insert Option")
         #call a event when name is changed
         option_name.setCursor(Qt.CursorShape.PointingHandCursor)
         self.option_edits.append(option_name)
+        self.option_radio.append(select_btn)
         rmv_btn = round_btn()
-        #add delete cll
         row.addWidget(select_btn)
         row.addWidget(option_name,1)
         row.addWidget(rmv_btn)
@@ -154,13 +187,137 @@ class QuizEditor(QWidget):
         container = QWidget()
         container.setLayout(row)
 
+        rmv_btn.clicked.connect(lambda: self._deleteOption(container))
+
         self.options_layout.addWidget(container)
 
-        if (len(self.option_edits) == 4):
-            self.add_option_btn.setEnabled(False)
+        self._update_add_option_state()
 
-    def deleteOption(self):
-        pass
+    def _deleteOption(self,container):
+        lineEdit = container.findChild(QLineEdit)
+
+        if lineEdit in self.option_edits:
+            index = self.option_edits.index(lineEdit)
+            self.option_edits.pop(index)
+            rad_btn = self.option_radio.pop(index)
+            self.option_group.removeButton(rad_btn)
+
+        self.options_layout.removeWidget(container)
+        container.deleteLater() 
+        self._update_add_option_state()
+
+    def _clear_options(self):
+        clear_layout(self.options_layout)
+        self.option_edits = []
+        self.option_radio = []
+        old_group = self.option_group #store to another variable to prevent leaks
+        self.option_group = QButtonGroup(self)
+        old_group.deleteLater()
+
+    def _update_add_option_state(self):
+        curr_q = self.questions[self.current]
+        self.add_option_btn.setEnabled(curr_q.qType == "Multiple_Choice" and len(self.option_edits) < self.maxOptions)
+
+    def _checked_index(self):
+        for i,radio in enumerate(self.option_radio):
+            if radio.isChecked():
+                return i
+        return None
+
+    #add questions and remove
+    def new_question(self, qtype):
+        q = QUESTION_CLASSES[qtype]()
+        q.qType = qtype
+        q.qTitle = self.quiz_name_label.text()
+        q.subj_name = self.subject_label.text()
+        return q
+ 
+    def save_current_question(self):
+        q = self.questions[self.current]
+        q.qTitle = self.quiz_name_label.text()
+        q.subj_name = self.subject_label.text()
+        q.question = self.question_edit.text()
+        q.points = self.points.value()
+        if q.qType == "Multiple_Choice":
+            q.choices = [e.text() for e in self.option_edits]
+        q.right_answer = self._checked_index()
+ 
+    def load_question(self, index):
+        self.current = index
+        q = self.questions[index]
+        self.qType = q.qType
+ 
+        self.combo.setCurrentIndex(self.combo.findText(TYPE_NAMES[q.qType]))
+        self.question_edit.setText(q.question)
+        self.points.setValue(q.points)
+ 
+        self._clear_options()
+        fixed = q.qType == "True_or_False"
+        for text in q.choices:
+            self._add_option_row()
+        if isinstance(q.right_answer, int) and 0 <= q.right_answer < len(self.option_radio):
+            self.option_radio[q.right_answer].setChecked(True)
+ 
+        self._update_add_option_state()
+        self.refresh_nav()
+ 
+    def add_question(self):
+        self.save_current_question()
+        self.questions.append(self.new_question("Multiple_Choice"))
+        self.load_question(len(self.questions) - 1)
+ 
+    def goto_question(self, index):
+        if index != self.current:
+            self.save_current_question()
+            self.load_question(index)
+        else:
+            self.refresh_nav()  # a click toggles the button; redraw to restore it
+ 
+    def delete_question(self, index):
+        self.save_current_question()
+        if len(self.questions) == 1:
+            # a quiz keeps at least one question: reset it instead
+            self.questions[0] = self.new_question("Multiple_Choice")
+            self.load_question(0)
+            return
+        del self.questions[index]
+        if index < self.current:
+            self.current -= 1
+        self.current = min(self.current, len(self.questions) - 1)
+        self.load_question(self.current)
+ 
+    def on_type_changed(self, text):
+        new_type = TYPE_KEYS[text]
+        old = self.questions[self.current]
+        if new_type == old.qType:
+            return
+        self.save_current_question()
+        new = self.new_question(new_type)
+        new.question = old.question       # keep the text and points,
+        new.points = old.points           # choices don't carry over
+        self.questions[self.current] = new
+        self.load_question(self.current)
+ 
+    def refresh_nav(self):
+        clear_layout(self.nav_list)
+        for i in range(len(self.questions)):
+            row = QHBoxLayout()
+            row.setContentsMargins(0, 0, 0, 0)
+            item = QPushButton(f"question {i + 1}")
+            item.setObjectName("navItem")
+            item.setCheckable(True)
+            item.setChecked(i == self.current)
+            item.setCursor(Qt.CursorShape.PointingHandCursor)
+            item.clicked.connect(lambda _=False, idx=i: self.goto_question(idx))
+            delete = round_btn()
+            delete.clicked.connect(lambda _=False, idx=i: self.delete_question(idx))
+            row.addWidget(item, 1)
+            row.addWidget(delete)
+            container = QWidget()
+            container.setLayout(row)
+            self.nav_list.addWidget(container)
+
+    
     # =======================================================================
     # UI CONSTRUCTION
     # =======================================================================
@@ -200,6 +357,7 @@ class QuizEditor(QWidget):
         self.combo.addItem("Multiple Choice")
         self.combo.addItem("True or False")
         self.combo.setMinimumWidth(350)
+        self.combo.currentTextChanged.connect(self.on_type_changed)
         self.points = QSpinBox()
         self.points.setRange(0, 1000)
         self.points.setSuffix(" points")
@@ -277,6 +435,5 @@ class QuizEditor(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     view = QuizEditor("Quiz name", "Subject name")
-
     view.show()
     sys.exit(app.exec())
