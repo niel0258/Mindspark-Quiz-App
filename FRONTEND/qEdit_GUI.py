@@ -163,31 +163,34 @@ class QuizEditor(QWidget):
         if (len(self.option_edits) >= self.maxOptions):
             return
         self._add_option_row()
-        self._update_add_option_state()
            
-    def _add_option_row(self):
+    def _add_option_row(self,text = "",fixed = False):
         row = QHBoxLayout()
         row.setContentsMargins(0,0,0,0)
         select_btn = QRadioButton()
         select_btn.setToolTip("Set as correct option")
+        select_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.option_group.addButton(select_btn)
         #add function that sets it correct
-        option_name = QLineEdit()
+        option_name = QLineEdit(text)
+        option_name.setReadOnly(fixed)
         option_name.setObjectName("option")
         option_name.setPlaceholderText("Insert Option")
         #call a event when name is changed
-        option_name.setCursor(Qt.CursorShape.PointingHandCursor)
+        option_name.setCursor(Qt.CursorShape.IBeamCursor)
         self.option_edits.append(option_name)
         self.option_radio.append(select_btn)
-        rmv_btn = round_btn()
+        
         row.addWidget(select_btn)
         row.addWidget(option_name,1)
-        row.addWidget(rmv_btn)
+
+        if not fixed:
+            rmv_btn = round_btn()
+            row.addWidget(rmv_btn)
+            rmv_btn.clicked.connect(lambda: self._deleteOption(container))
 
         container = QWidget()
         container.setLayout(row)
-
-        rmv_btn.clicked.connect(lambda: self._deleteOption(container))
 
         self.options_layout.addWidget(container)
 
@@ -254,7 +257,7 @@ class QuizEditor(QWidget):
         self._clear_options()
         fixed = q.qType == "True_or_False"
         for text in q.choices:
-            self._add_option_row()
+            self._add_option_row(text,fixed)
         if isinstance(q.right_answer, int) and 0 <= q.right_answer < len(self.option_radio):
             self.option_radio[q.right_answer].setChecked(True)
  
@@ -420,6 +423,7 @@ class QuizEditor(QWidget):
         right.addWidget(navi, 1)
 
         self.add_question_btn = pill("Add question")
+        self.add_question_btn.clicked.connect(self.add_question)
         right.addWidget(self.add_question_btn)
         right.addSpacing(40)
         return right
