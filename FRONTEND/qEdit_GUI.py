@@ -1,12 +1,14 @@
+from typing import Any
 import sys
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QApplication, QButtonGroup, QComboBox, QFrame, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget,
+    QLineEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget,QScrollArea,QMessageBox
 )
 
 from question import MultipleChoice,TrueOrFalse
+from pathlib import Path #for finding style
 
 #-----------------------------------------------------------------------------
 # Question types
@@ -22,104 +24,17 @@ QUESTION_CLASSES  = {
     "True_or_False" : TrueOrFalse
 }
 
-# ---------------------------------------------------------------------------
-# Theme colors
-# ---------------------------------------------------------------------------
-MAROON = "#651416"
-RED = "#ff2a2a"
-
-STYLE = f"""
-#root {{ background: white; }}
-
-#header {{ background: {MAROON}; }}
-#quizName {{ font-size: 26px; font-weight: bold; color: white; }}
-#subjectName {{ font-size: 15px; color: white; }}
-
-#card {{ background: #d9d9d9; border-radius: 28px; }}
-
-#cardBar {{ background: {MAROON}; border-radius: 28px; }}
-#cardBar QComboBox {{
-    background: transparent; color: white; border: none;
-    font-size: 18px; font-weight: bold; padding: 4px 8px;
-}}
-#cardBar QComboBox::drop-down {{ border: none; width: 24px; }}
-#cardBar QComboBox QAbstractItemView {{
-    background: white; color: black; selection-background-color: {MAROON};
-    selection-color: white; font-size: 14px; font-weight: normal;
-}}
-#cardBar QSpinBox {{
-    background: transparent; color: white; border: none; font-size: 14px;
-}}
-
-#option{{
-    background: white; color: black; border: none;
-    border-radius: 15px; padding: 9px 20px; font-size: 14px;
-}}
-
-#questionEdit {{
-    background: transparent; border: none;
-    font-size: 28px; font-weight: bold;
-}}
-#optionEdit {{
-    background: white; border: none; border-radius: 13px;
-    padding: 6px 14px; font-size: 14px;
-}}
-
-QRadioButton::indicator {{
-    width: 26px; height: 26px; border-radius: 15px;
-    border: 2px solid {MAROON}; background: white;
-}}
-QRadioButton::indicator:checked {{
-    background: qradialgradient(cx:.5, cy:.5, radius:.5, fx:.5, fy:.5,
-        stop:0 {MAROON}, stop:0.5 {MAROON}, stop:0.55 white, stop:1 white);
-}}
-
-#navi {{ background: #ebebeb; border-radius: 28px; }}
-#naviTitle {{
-    background: {MAROON}; color: white; border-radius: 26px;
-    font-size: 14px; font-weight: bold; min-height: 52px; max-height: 52px;
-}}
-#navi QPushButton#navItem {{              /* clickable question name */
-    background: transparent; color: black; border: none;
-    font-size: 15px; text-align: left; padding: 4px;
-}}
-#navi QPushButton#navItem:checked {{ font-weight: bold; }}  /* current question */
-
-QPushButton#pill {{
-    background: {MAROON}; color: white; border: none;
-    border-radius: 15px; padding: 9px 20px; font-size: 14px;
-}}
-QPushButton#pill:disabled {{ background: #9b7a7b; }}
-QPushButton#addOption {{
-    background: white; color: black; border: none;
-    border-radius: 15px; padding: 9px 20px; font-size: 14px;
-}}
-QPushButton#round {{
-    background: {RED}; color: white; border: none; border-radius: 17px;
-    min-width: 34px; max-width: 34px; min-height: 34px; max-height: 34px;
-}}
-"""
-
 def pill(text, name="pill"):
     b = QPushButton(text)
     b.setObjectName(name)
     b.setCursor(Qt.CursorShape.PointingHandCursor)
     return b
 
-
 def round_btn(text="X"):
     b = QPushButton(text)
     b.setObjectName("round")
     b.setCursor(Qt.CursorShape.PointingHandCursor)
     return b
-
-
-def clear_layout(layout):
-   #Remove and delete every widget inside a layout.
-    while layout.count():
-        item = layout.takeAt(0)
-        if item.widget():
-            item.widget().deleteLater()
 
 class QuizEditor(QWidget):
     def __init__(self, quiz_name="Quiz name", subject="Subject name"):
@@ -153,7 +68,13 @@ class QuizEditor(QWidget):
         outer.addLayout(body, 1)
         outer.addLayout(self._build_footer())
 
-        self.setStyleSheet(STYLE)
+        qss_file = Path(__file__).parent.parent /"BACKEND"/ "qEdit_STYLE.qss"
+
+        if qss_file.exists():
+            app.setStyleSheet(qss_file.read_text())
+            print("loaded style file")
+        else:
+            raise Exception("Cannot find the styling file")
 
         self.questions = [self.new_question("Multiple_Choice")]
         self.load_question(0)
@@ -176,6 +97,7 @@ class QuizEditor(QWidget):
         option_name.setReadOnly(fixed)
         option_name.setObjectName("option")
         option_name.setPlaceholderText("Insert Option")
+        option_name.editingFinished.connect(self.save_current_question)
         #call a event when name is changed
         option_name.setCursor(Qt.CursorShape.IBeamCursor)
         self.option_edits.append(option_name)
@@ -196,6 +118,13 @@ class QuizEditor(QWidget):
 
         self._update_add_option_state()
 
+    def _clear_layout(self,layout):
+    #Remove and delete every widget inside a layout.
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
     def _deleteOption(self,container):
         lineEdit = container.findChild(QLineEdit)
 
@@ -210,7 +139,7 @@ class QuizEditor(QWidget):
         self._update_add_option_state()
 
     def _clear_options(self):
-        clear_layout(self.options_layout)
+        self._clear_layout(self.options_layout)
         self.option_edits = []
         self.option_radio = []
         old_group = self.option_group #store to another variable to prevent leaks
@@ -244,6 +173,13 @@ class QuizEditor(QWidget):
         if q.qType == "Multiple_Choice":
             q.choices = [e.text() for e in self.option_edits]
         q.right_answer = self._checked_index()
+
+    def is_question_valid(self):
+        q: MultipleChoice | TrueOrFalse | Any = self.questions[self.current]
+        if not q.question.strip() or q.points<0 or not q.choices:
+            QMessageBox.warning(self,"Warning","Fill in on the details before accessing a different question")
+            return False
+        return True
  
     def load_question(self, index):
         self.current = index
@@ -271,7 +207,6 @@ class QuizEditor(QWidget):
  
     def goto_question(self, index):
         if index != self.current:
-            self.save_current_question()
             self.load_question(index)
         else:
             self.refresh_nav()  # a click toggles the button; redraw to restore it
@@ -302,11 +237,11 @@ class QuizEditor(QWidget):
         self.load_question(self.current)
  
     def refresh_nav(self):
-        clear_layout(self.nav_list)
+        self._clear_layout(self.nav_list)
         for i in range(len(self.questions)):
             row = QHBoxLayout()
             row.setContentsMargins(0, 0, 0, 0)
-            item = QPushButton(f"question {i + 1}")
+            item = QPushButton(f"Question {i + 1}")
             item.setObjectName("navItem")
             item.setCheckable(True)
             item.setChecked(i == self.current)
@@ -355,6 +290,7 @@ class QuizEditor(QWidget):
         bar.setFixedHeight(64)
         bar_lay = QHBoxLayout(bar)
         bar_lay.setContentsMargins(24, 10, 24, 10)
+
         self.combo = QComboBox()
         self.combo.setObjectName("qTSelect")
         self.combo.addItem("Multiple Choice")
@@ -366,6 +302,7 @@ class QuizEditor(QWidget):
         self.points.setSuffix(" points")
         self.points.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
         self.points.setAlignment(Qt.AlignmentFlag.AlignRight)
+
         bar_lay.addWidget(self.combo)
         bar_lay.addStretch()
         bar_lay.addWidget(self.points)
@@ -375,6 +312,8 @@ class QuizEditor(QWidget):
         self.question_edit = QLineEdit()
         self.question_edit.setObjectName("questionEdit")
         self.question_edit.setPlaceholderText("Insert Question")
+        self.question_edit.editingFinished.connect(self.save_current_question)
+
         q_wrap = QHBoxLayout()
         q_wrap.setContentsMargins(28, 0, 28, 0)
         q_wrap.addWidget(self.question_edit)
@@ -415,10 +354,23 @@ class QuizEditor(QWidget):
         navi_lay.addWidget(title)
 
         # question rows live here (filled by set_questions)
-        self.nav_list = QVBoxLayout()
+        holder = QWidget()# scrolling content
+        holder.setObjectName("naviHolder")
+        holder.setAutoFillBackground(False)     
+
+        self.nav_list = QVBoxLayout(holder)
         self.nav_list.setContentsMargins(14, 0, 8, 0)
         self.nav_list.setSpacing(6)
-        navi_lay.addLayout(self.nav_list)
+        self.nav_list.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        scroll = QScrollArea()
+        scroll.setObjectName("naviScroll")
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setWidget(holder)
+        navi_lay.addWidget(scroll, 1)   
+
         navi_lay.addStretch()
         right.addWidget(navi, 1)
 
