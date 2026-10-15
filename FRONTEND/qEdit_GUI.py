@@ -68,7 +68,7 @@ class QuizEditor(QWidget):
         outer.addLayout(body, 1)
         outer.addLayout(self._build_footer())
 
-        qss_file = Path(__file__).parent.parent /"BACKEND"/ "qEdit_STYLE.qss"
+        qss_file = Path(__file__).resolve().parent / "qEdit_STYLE.qss"
 
         if qss_file.exists():
             app.setStyleSheet(qss_file.read_text())
