@@ -62,7 +62,7 @@ class QuizApp(QMainWindow):
                 "options": options,
                 "correct": correct_str,
                 "correct_idx": row["correct"],
-                "points": row["points"]
+                "points": row["points"] if row["points"] and row["points"] > 0 else 1
             })
         return questions
 
@@ -318,7 +318,7 @@ class QuizApp(QMainWindow):
         for i, q in enumerate(self.questions):
             selected_idx = self.user_answers.get(i)
             selected_option = q["options"][selected_idx] if selected_idx is not None and selected_idx < len(q["options"]) else "None"
-            is_correct = (selected_idx == q["correct_idx"])
+            is_correct = (selected_idx is not None and selected_idx == q["correct_idx"])
             if is_correct:
                 score += q.get("points", 1)
 
@@ -330,7 +330,10 @@ class QuizApp(QMainWindow):
             }
 
         percentage = (score / total_points * 100) if total_points > 0 else 0.0
-        save_student_result(self.username, self.quiz_id, score, total_points, percentage, answers_export)
+        saved = save_student_result(self.username, self.quiz_id, score, total_points, percentage, answers_export)
+        if not saved:
+            QMessageBox.critical(self, "Error", "Your answers could not be saved. Please try submitting again.")
+            return
         
         self.quiz_submitted.emit(self.username, self.quiz_id)
         self.close()
