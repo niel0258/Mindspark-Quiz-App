@@ -105,7 +105,7 @@ class MainApp(QApplication):
         self.active_quiz_list_window = dialog
 
     def open_quiz_creator(self, username):
-        self.creator_win = QuizEditor("Quiz name", "Subject name", username)
+        self.creator_win = QuizEditor("", "", username)
         self.creator_win.show()
         self.creator_win.destroyed.connect(lambda: self.reset_to_landing(username, "Teacher"))
 
