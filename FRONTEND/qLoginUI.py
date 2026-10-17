@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QMessageBox,
 )
+sys.path.insert(0, "../BACKEND")
 from users import verify_user, create_user
 import styles as st
 

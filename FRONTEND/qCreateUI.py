@@ -8,6 +8,8 @@ from PyQt6.QtWidgets import (
     QLineEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget, QScrollArea, QMessageBox, QFileDialog
 )
 
+sys.path.insert(0, "../BACKEND")
+
 from question import MultipleChoice, TrueOrFalse
 import styles as st
 from database import save_quiz_to_db, initialize_quiz_storage

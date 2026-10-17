@@ -12,6 +12,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+sys.path.insert(0, "../BACKEND")
+
 import styles as st
 from database import get_quiz_details, RESULTS_DIR
 

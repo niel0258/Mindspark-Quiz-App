@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
 )
 
 import styles as st
+sys.path.insert(0, "../BACKEND")
 from database import get_all_quizzes
 
 WINDOW_SIZE = (1280, 720)

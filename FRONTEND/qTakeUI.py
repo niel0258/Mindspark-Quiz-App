@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
 )
 
 import styles as st
+sys.path.insert(0, "../BACKEND")
 from database import get_quiz_details, save_student_result
 
 class QuizApp(QMainWindow):
