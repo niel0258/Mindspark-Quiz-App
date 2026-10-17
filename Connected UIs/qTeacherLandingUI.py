@@ -16,7 +16,7 @@ TRANSLATIONS = {
     "English": {
         "home": "Home",
         "quizzes": "Quizzes",
-        "title": "Think\nDifferent.",
+        "title": "Go\nFurther.",
         "desc": "THIS IS AN ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL THAT LETS EDUCATORS CREATE ENGAGING QUIZZES, RETAIN INFORMATION AND BOOST TRAINING PARTICIPATION.",
         "create": "Create Quiz",
         "sign_out": "Sign Out"
@@ -24,7 +24,7 @@ TRANSLATIONS = {
     "Español": {
         "home": "Inicio",
         "quizzes": "Quizzes",
-        "title": "Piensa\nDiferente.",
+        "title": "ir más allá",
         "desc": "ESTA ES UNA HERRAMIENTA DIGITAL BASADA EN GUI DE PLATAFORMA DE QUIZ EN LÍNEA QUE PERMITE A LOS EDUCADORES CREAR QUIZZES ATRACTIVOS.",
         "create": "Crear Quiz",
         "sign_out": "Cerrar Sesión"
@@ -32,7 +32,7 @@ TRANSLATIONS = {
     "Filipino": {
         "home": "Tahanan",
         "quizzes": "Mga Pagsusulit",
-        "title": "Mag-isip\nng Naiiba.",
+        "title": "Itaguyod\nmo pa!",
         "desc": "ITO AY ISANG ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL NA NAGBIBIGAY-DAAN SA MGA GURO NA GUMAWA NG MGA PAGSUSULIT.",
         "create": "Gumawa ng Pagsusulit",
         "sign_out": "Mag-sign Out"
