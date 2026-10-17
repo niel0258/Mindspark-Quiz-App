@@ -8,6 +8,8 @@ from PyQt6.QtWidgets import (
 )
 
 import styles as st
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
 from database import get_quiz_details, save_student_result
 
 class QuizApp(QMainWindow):

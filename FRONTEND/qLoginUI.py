@@ -1,4 +1,12 @@
 import sys
+from pathlib import Path
+
+script_dir = Path(__file__).resolve().parent
+for parent_check in [script_dir, script_dir.parent, script_dir / "ui", script_dir / "styles"]:
+    if (parent_check / "styles.py").exists() and str(parent_check) not in sys.path:
+        sys.path.append(str(parent_check))
+        break
+
 from PyQt6.QtCore import Qt, pyqtSignal, QRegularExpression
 from PyQt6.QtGui import QColor, QRegularExpressionValidator
 from PyQt6.QtWidgets import (
@@ -16,14 +24,20 @@ from PyQt6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QMessageBox,
 )
-from users import verify_user, create_user
 
-WINDOW_SIZE = (980, 600)
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
+
+from users import verify_user, create_user
+import styles as st
+
+WINDOW_SIZE = (1280, 720)
 
 
 def _password_field() -> QLineEdit:
     edit = QLineEdit()
     edit.setEchoMode(QLineEdit.EchoMode.Password)
+    edit.setStyleSheet(st.INPUT_FIELD)
     
     no_space_regex = QRegularExpression(r"^\S*$")
     validator = QRegularExpressionValidator(no_space_regex, edit)
@@ -35,79 +49,51 @@ def _password_field() -> QLineEdit:
 def _page_style() -> str:
     return f"""
     QWidget#page {{
-        background-color: #F5F5F5;
+        background-color: {st.Colors.BG_MAIN};
     }}
     QLabel {{
         font-family: 'Segoe UI', Arial, sans-serif;
         background: transparent;
     }}
     QLabel#header {{
-        background-color: {"#661414"};
-        color: #F5F5F5;
+        background-color: {st.Colors.PRIMARY};
+        color: {st.Colors.TEXT_LIGHT};
         font-size: 22px;
         font-weight: bold;
         padding: 10px 20px;
     }}
     QLabel#pageTitle {{
-        color: #000000;
+        color: {st.Colors.TEXT_DARK};
         font-size: 38px;
         font-weight: bold;
     }}
     QLabel#hint {{
-        color: #000000;
+        color: {st.Colors.TEXT_MUTED};
         font-size: 14px;
     }}
     QFrame#card {{
-        background-color: {"#661414"};
-        border: 4px solid {"#FFC800"};
+        background-color: {st.Colors.PRIMARY};
+        border: 4px solid {st.Colors.GOLD};
         border-radius: 24px;
     }}
     QFrame#card QLabel {{
-        color: #F5F5F5;
+        color: {st.Colors.TEXT_LIGHT};
         font-size: 18px;
         border: none;
     }}
     QLabel#cardTitle {{
-        color: #F5F5F5;
+        color: {st.Colors.TEXT_LIGHT};
         font-size: 22px;
-    }}
-    QLineEdit {{
-        background: #F5F5F5;
-        border: none;
-        border-radius: 12px;
-        padding: 4px 12px;
-        min-height: 24px;
-        font-size: 14px;
-        color: #000000;
-    }}
-    QComboBox {{
-        background: #F5F5F5;
-        border: none;
-        padding: 6px 10px;
-        font-size: 13px;
-        color: #000000;
-    }}
-    QPushButton#primary {{
-        background-color: {"#4B0808"};
-        color: #F5F5F5;
-        border: none;
-        border-radius: 16px;
-        font-size: 14px;
-        font-weight: bold;
-        min-height: 32px;
-    }}
-    QPushButton#primary:hover {{
-        background-color: #370404;
     }}
     QPushButton#link {{
         background: transparent;
         border: none;
-        color: {"#661414"};
+        color: {st.Colors.PRIMARY};
         text-decoration: underline;
         font-size: 13px;
     }}
     QPushButton#link:hover {{
-        color: #781E24;
+        color: {st.Colors.PRIMARY_HOVER};
     }}
     """
 
@@ -123,11 +109,8 @@ class LoginUI(QWidget):
         self.pages = QStackedWidget()
         outer.addWidget(self.pages)
 
-        # Build UI Screens
         self.pages.addWidget(self._create_register_page())  
         self.pages.addWidget(self._create_login_page())   
-        
-    # ----page builder (header, title, hint, card, button, link)-----
 
     def _build_page(self, title, hint, rows, btn_text, on_btn, link_text, on_link) -> QWidget:
         page = QWidget()
@@ -139,19 +122,16 @@ class LoginUI(QWidget):
         v.setContentsMargins(0, 0, 0, 20)
         v.setSpacing(8)
 
-        # Top banner header
         header = QLabel("Name of Program")
         header.setObjectName("header")
         v.addWidget(header)
         v.addSpacing(10)
 
-        # Page Title
         t = QLabel(title)
         t.setObjectName("pageTitle")
         t.setAlignment(Qt.AlignmentFlag.AlignCenter)
         v.addWidget(t)
 
-        # Hint text
         hint_row = QHBoxLayout()
         hint_row.addStretch()
         h = QLabel(hint)
@@ -161,7 +141,6 @@ class LoginUI(QWidget):
         hint_row.addStretch()
         v.addLayout(hint_row)
 
-        # Card container
         card = QFrame()
         card.setObjectName("card")
         card.setFixedSize(380, 290)
@@ -176,7 +155,6 @@ class LoginUI(QWidget):
         grid.setContentsMargins(20, 16, 20, 16)
         grid.setVerticalSpacing(14)
         
-        # Header inside the card
         card_title = QLabel("Logo or name?")
         card_title.setObjectName("cardTitle")
         card_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -199,9 +177,8 @@ class LoginUI(QWidget):
         v.addLayout(card_row)
         v.addSpacing(10)
 
-        # Primary button
         btn = QPushButton(btn_text)
-        btn.setObjectName("primary")
+        btn.setStyleSheet(st.BTN_PRIMARY)
         btn.setFixedWidth(240)
         if on_btn:
             btn.clicked.connect(on_btn)
@@ -211,7 +188,6 @@ class LoginUI(QWidget):
         btn_row.addStretch()
         v.addLayout(btn_row)
 
-        # Navigation Link
         link = QPushButton(link_text)
         link.setObjectName("link")
         link.setFlat(True)
@@ -221,8 +197,6 @@ class LoginUI(QWidget):
         v.addStretch()
         return page
 
-    # -----------------------------PAGE 0: Register----------------------
-    
     def do_register(self):
         username = self.reg_user.text().strip()
         password = self.reg_pass.text()
@@ -243,10 +217,13 @@ class LoginUI(QWidget):
             
     def _create_register_page(self) -> QWidget:
         self.reg_user = QLineEdit()
+        self.reg_user.setPlaceholderText("Username")
+        self.reg_user.setStyleSheet(st.INPUT_FIELD)
         self.reg_pass = _password_field()
         self.reg_pass.setPlaceholderText("(min. 6 characters)") 
         self.reg_pass.returnPressed.connect(self.do_register)
         self.reg_role = QComboBox()
+        self.reg_role.setStyleSheet(st.COMBOBOX)
         self.reg_role.addItems(["Student", "Teacher"])
 
         return self._build_page(
@@ -258,8 +235,6 @@ class LoginUI(QWidget):
             lambda: self.pages.setCurrentIndex(1),   
         )
 
-    # -----------------------------PAGE 1: Login----------------------
-    
     def do_login(self):
         username = self.login_user.text().strip()
         password = self.login_pass.text()
@@ -279,7 +254,10 @@ class LoginUI(QWidget):
 
     def _create_login_page(self) -> QWidget:
         self.login_user = QLineEdit()
+        self.login_user.setPlaceholderText("Username")
+        self.login_user.setStyleSheet(st.INPUT_FIELD)
         self.login_pass = _password_field()
+        self.login_pass.setPlaceholderText("Password")
         self.login_pass.returnPressed.connect(self.do_login)
 
         return self._build_page(
@@ -293,7 +271,6 @@ class LoginUI(QWidget):
         )
 
     def reset(self):
-        """Clear all fields and go back to the Register page (call this on log out)."""
         for w in (self.reg_user, self.reg_pass, self.login_user, self.login_pass):
             w.clear()
         self.reg_role.setCurrentIndex(0)

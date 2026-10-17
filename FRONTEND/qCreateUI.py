@@ -1,12 +1,15 @@
 import sys
 import csv
-import json
 import re
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication, QButtonGroup, QComboBox, QFrame, QHBoxLayout, QLabel,
     QLineEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget, QScrollArea, QMessageBox, QFileDialog
 )
+
+from pathlib import Path
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
 
 from question import MultipleChoice, TrueOrFalse
 import styles as st

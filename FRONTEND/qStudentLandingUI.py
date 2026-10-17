@@ -7,6 +7,10 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QComboBox, QFrame
 )
 
+from pathlib import Path
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
+
 import styles as st
 from database import get_all_quizzes
 
@@ -16,33 +20,36 @@ TRANSLATIONS = {
     "English": {
         "home": "Home",
         "quizzes": "Quizzes",
-        "title": "Go\nFurther.",
-        "desc": "THIS IS AN ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL THAT LETS EDUCATORS CREATE ENGAGING QUIZZES, RETAIN INFORMATION AND BOOST TRAINING PARTICIPATION.",
-        "create": "Create Quiz",
+        "quizzes_sub": "Quizzes to Take",
+        "title": "Think\nDifferent.",
+        "desc": "THIS IS AN ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL THAT LETS STUDENTS TAKE ENGAGING QUIZZES, RETAIN INFORMATION AND BOOST PARTICIPATION.",
+        "play": "Let's Play",
         "sign_out": "Sign Out"
     },
     "Español": {
         "home": "Inicio",
         "quizzes": "Quizzes",
-        "title": "ir más allá",
-        "desc": "ESTA ES UNA HERRAMIENTA DIGITAL BASADA EN GUI DE PLATAFORMA DE QUIZ EN LÍNEA QUE PERMITE A LOS EDUCADORES CREAR QUIZZES ATRACTIVOS.",
-        "create": "Crear Quiz",
+        "quizzes_sub": "Quizzes para Tomar",
+        "title": "Piensa\nDiferente.",
+        "desc": "ESTA ES UNA HERRAMIENTA DIGITAL BASADA EN GUI DE PLATAFORMA DE QUIZ EN LÍNEA QUE PERMITE A LOS ESTUDIANTES REALIZAR QUIZZES ATRACTIVOS.",
+        "play": "Vamos a Jugar",
         "sign_out": "Cerrar Sesión"
     },
     "Filipino": {
         "home": "Tahanan",
         "quizzes": "Mga Pagsusulit",
-        "title": "Itaguyod\nmo pa!",
-        "desc": "ITO AY ISANG ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL NA NAGBIBIGAY-DAAN SA MGA GURO NA GUMAWA NG MGA PAGSUSULIT.",
-        "create": "Gumawa ng Pagsusulit",
+        "quizzes_sub": "Mga Pagsusulit na Tatanawin",
+        "title": "Mag-isip\nng Naiiba.",
+        "desc": "ITO AY ISANG ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL NA NAGBIBIGAY-DAAN SA MGA MAG-AARAL NA KUMUHA NG MGA PAGSUSULIT.",
+        "play": "Laro Tayo!",
         "sign_out": "Mag-sign Out"
     }
 }
 
-class TeacherQuizLandingUI(QWidget):
-    def __init__(self, username="teacher"):
+class StudentQuizLandingUI(QWidget):
+    def __init__(self, username="student"):
         super().__init__()
-        self.setWindowTitle("Teacher Quiz Platform")
+        self.setWindowTitle("Student Quiz Platform")
         self.setFixedSize(*WINDOW_SIZE)
         self.username = username
         
@@ -79,7 +86,7 @@ class TeacherQuizLandingUI(QWidget):
         nav_bar_layout = QHBoxLayout(nav_bar)
         nav_bar_layout.setContentsMargins(30, 15, 30, 15)
         
-        brand_logo = QLabel("Teacher Portal")
+        brand_logo = QLabel("Student Portal")
         brand_logo.setStyleSheet("font-size: 24px; font-weight: bold; color: #FFFFFF; background: transparent;")
         nav_bar_layout.addWidget(brand_logo)
         nav_bar_layout.addStretch()
@@ -99,31 +106,35 @@ class TeacherQuizLandingUI(QWidget):
         body_layout.setContentsMargins(50, 50, 50, 40)
         body_layout.setSpacing(40)
         
-        self.left_hero_block = QVBoxLayout()
-        self.left_hero_block.setSpacing(15)
-        self.left_hero_block.addStretch()
+        left_hero_block = QVBoxLayout()
+        left_hero_block.setSpacing(15)
+        left_hero_block.addStretch()
+        
+        self.quizzes_sub_label = QLabel("Quizzes to Take")
+        self.quizzes_sub_label.setStyleSheet("color: #ca8a04; font-size: 12px; font-weight: bold; background: transparent;")
+        left_hero_block.addWidget(self.quizzes_sub_label)
         
         self.hero_title = QLabel("Think\nDifferent.")
         self.hero_title.setStyleSheet("font-size: 64px; font-weight: 900; color: #FFFFFF; background: transparent; line-height: 1.1;")
-        self.left_hero_block.addWidget(self.hero_title)
+        left_hero_block.addWidget(self.hero_title)
         
-        self.hero_desc = QLabel("THIS IS AN ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL THAT LETS EDUCATORS CREATE ENGAGING QUIZZES.")
+        self.hero_desc = QLabel("THIS IS AN ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL THAT LETS STUDENTS TAKE ENGAGING QUIZZES.")
         self.hero_desc.setStyleSheet("color: #E2C2C2; font-size: 13px; font-weight: bold; background: transparent;")
         self.hero_desc.setWordWrap(True)
-        self.left_hero_block.addWidget(self.hero_desc)
-        self.left_hero_block.addSpacing(10)
+        left_hero_block.addWidget(self.hero_desc)
+        left_hero_block.addSpacing(10)
         
         cta_row = QHBoxLayout()
         cta_row.setSpacing(15)
         
-        self.create_btn = QPushButton("Create Quiz")
-        self.create_btn.setStyleSheet(st.BTN_PILL)
-        cta_row.addWidget(self.create_btn)
+        self.play_btn = QPushButton("Let's Play")
+        self.play_btn.setStyleSheet(st.BTN_PILL)
+        cta_row.addWidget(self.play_btn)
         cta_row.addStretch()
         
-        self.left_hero_block.addLayout(cta_row)
-        self.left_hero_block.addStretch()
-        body_layout.addLayout(self.left_hero_block, stretch=30)
+        left_hero_block.addLayout(cta_row)
+        left_hero_block.addStretch()
+        body_layout.addLayout(left_hero_block, stretch=30)
         
         graphic_container = QFrame()
         graphic_container.setStyleSheet("background: transparent; border: none;")
@@ -132,7 +143,7 @@ class TeacherQuizLandingUI(QWidget):
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        image_path = os.path.join(script_dir, "burn.png")
+        image_path = os.path.join(script_dir, "dice.png")
         pixmap = QPixmap(image_path)
         if not pixmap.isNull():
             transform = QTransform().rotate(15)
@@ -149,17 +160,17 @@ class TeacherQuizLandingUI(QWidget):
         root_layout.addLayout(body_layout)
 
     def load_quizzes_view(self):
-        self.hero_title.setText("Quizzes Made")
+        self.hero_title.setText("Quizzes to Take")
         quizzes = get_all_quizzes()
         if quizzes:
-            desc_text = "\n".join([f"• {q[1]} ({q[2]}) [Creator: {q[3]}]" for q in quizzes])
+            desc_text = "\n".join([f"• Quiz ID {q[0]}: {q[1]} ({q[2]})" for q in quizzes])
         else:
-            desc_text = "No quizzes created yet."
+            desc_text = "No quizzes available to take."
         self.hero_desc.setText(desc_text)
 
     def reset_home_view(self):
         self.hero_title.setText("Think\nDifferent.")
-        self.hero_desc.setText("THIS IS AN ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL THAT LETS EDUCATORS CREATE ENGAGING QUIZZES.")
+        self.hero_desc.setText("THIS IS AN ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL THAT LETS STUDENTS TAKE ENGAGING QUIZZES.")
 
     def update_language(self, language_name: str):
         lang_data = TRANSLATIONS.get(language_name)
@@ -167,13 +178,14 @@ class TeacherQuizLandingUI(QWidget):
             return
         self.nav_home.setText(lang_data["home"])
         self.nav_quizzes.setText(lang_data["quizzes"])
+        self.quizzes_sub_label.setText(lang_data["quizzes_sub"])
         self.hero_title.setText(lang_data["title"])
         self.hero_desc.setText(lang_data["desc"])
-        self.create_btn.setText(lang_data["create"])
+        self.play_btn.setText(lang_data["play"])
         self.sign_out_btn.setText(lang_data["sign_out"])
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    ui = TeacherQuizLandingUI()
+    ui = StudentQuizLandingUI()
     ui.show()
     sys.exit(app.exec())
