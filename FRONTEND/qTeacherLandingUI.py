@@ -8,7 +8,9 @@ from PyQt6.QtWidgets import (
 )
 
 import styles as st
-sys.path.insert(0, "../BACKEND")
+from pathlib import Path
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
 from database import get_all_quizzes
 
 WINDOW_SIZE = (1280, 720)
@@ -17,7 +19,7 @@ TRANSLATIONS = {
     "English": {
         "home": "Home",
         "quizzes": "Quizzes",
-        "title": "Think\nDifferent.",
+        "title": "Go\nFurther.",
         "desc": "THIS IS AN ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL THAT LETS EDUCATORS CREATE ENGAGING QUIZZES, RETAIN INFORMATION AND BOOST TRAINING PARTICIPATION.",
         "create": "Create Quiz",
         "sign_out": "Sign Out"
@@ -25,7 +27,7 @@ TRANSLATIONS = {
     "Español": {
         "home": "Inicio",
         "quizzes": "Quizzes",
-        "title": "Piensa\nDiferente.",
+        "title": "ir más allá",
         "desc": "ESTA ES UNA HERRAMIENTA DIGITAL BASADA EN GUI DE PLATAFORMA DE QUIZ EN LÍNEA QUE PERMITE A LOS EDUCADORES CREAR QUIZZES ATRACTIVOS.",
         "create": "Crear Quiz",
         "sign_out": "Cerrar Sesión"
@@ -33,7 +35,7 @@ TRANSLATIONS = {
     "Filipino": {
         "home": "Tahanan",
         "quizzes": "Mga Pagsusulit",
-        "title": "Mag-isip\nng Naiiba.",
+        "title": "Itaguyod\nmo pa!",
         "desc": "ITO AY ISANG ONLINE QUIZ PLATFORM GUI-BASED DIGITAL TOOL NA NAGBIBIGAY-DAAN SA MGA GURO NA GUMAWA NG MGA PAGSUSULIT.",
         "create": "Gumawa ng Pagsusulit",
         "sign_out": "Mag-sign Out"
@@ -133,7 +135,7 @@ class TeacherQuizLandingUI(QWidget):
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        image_path = os.path.join(script_dir, "dice.png")
+        image_path = os.path.join(script_dir, "burn.png")
         pixmap = QPixmap(image_path)
         if not pixmap.isNull():
             transform = QTransform().rotate(15)

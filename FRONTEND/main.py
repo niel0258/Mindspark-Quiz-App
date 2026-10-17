@@ -2,7 +2,9 @@ import sys
 from PyQt6.QtWidgets import QApplication, QStackedWidget, QMessageBox, QWidget, QVBoxLayout, QPushButton, QLabel, QScrollArea, QHBoxLayout
 from PyQt6.QtCore import Qt
 
-sys.path.insert(0, "../BACKEND")
+from pathlib import Path
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
 
 import styles as st
 from users import initialize_storage

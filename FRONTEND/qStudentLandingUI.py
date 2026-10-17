@@ -7,8 +7,11 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QComboBox, QFrame
 )
 
+from pathlib import Path
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
+
 import styles as st
-sys.path.insert(0, "../BACKEND")
 from database import get_all_quizzes
 
 WINDOW_SIZE = (1280, 720)

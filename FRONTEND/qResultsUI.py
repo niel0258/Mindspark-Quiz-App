@@ -13,11 +13,12 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-sys.path.insert(0, "../BACKEND")
+from pathlib import Path
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
 
 import styles as st
 from database import get_quiz_details, RESULTS_DIR
-
 
 class QuizResultWindow(QMainWindow):
     def __init__(self, username="student", quiz_id=1):

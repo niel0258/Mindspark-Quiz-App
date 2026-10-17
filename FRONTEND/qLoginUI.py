@@ -24,7 +24,10 @@ from PyQt6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QMessageBox,
 )
-sys.path.insert(0, "../BACKEND")
+
+backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+sys.path.insert(0, str(backend_dir))
+
 from users import verify_user, create_user
 import styles as st
 
@@ -214,6 +217,7 @@ class LoginUI(QWidget):
             
     def _create_register_page(self) -> QWidget:
         self.reg_user = QLineEdit()
+        self.reg_user.setPlaceholderText("Username")
         self.reg_user.setStyleSheet(st.INPUT_FIELD)
         self.reg_pass = _password_field()
         self.reg_pass.setPlaceholderText("(min. 6 characters)") 
@@ -250,8 +254,10 @@ class LoginUI(QWidget):
 
     def _create_login_page(self) -> QWidget:
         self.login_user = QLineEdit()
+        self.login_user.setPlaceholderText("Username")
         self.login_user.setStyleSheet(st.INPUT_FIELD)
         self.login_pass = _password_field()
+        self.login_pass.setPlaceholderText("Password")
         self.login_pass.returnPressed.connect(self.do_login)
 
         return self._build_page(
