@@ -132,7 +132,7 @@ class TeacherQuizLandingUI(QWidget):
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        image_path = os.path.join(script_dir, "dice.png")
+        image_path = os.path.join(script_dir, "burn.png")
         pixmap = QPixmap(image_path)
         if not pixmap.isNull():
             transform = QTransform().rotate(15)
