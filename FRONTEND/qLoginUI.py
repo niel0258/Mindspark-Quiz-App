@@ -8,7 +8,7 @@ for parent_check in [script_dir, script_dir.parent, script_dir / "ui", script_di
         break
 
 from PyQt6.QtCore import Qt, pyqtSignal, QRegularExpression
-from PyQt6.QtGui import QColor, QRegularExpressionValidator
+from PyQt6.QtGui import QColor, QRegularExpressionValidator, QPixmap, QIcon
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -122,7 +122,7 @@ class LoginUI(QWidget):
         v.setContentsMargins(0, 0, 0, 20)
         v.setSpacing(8)
 
-        header = QLabel("Name of Program")
+        header = QLabel("MindSpark")
         header.setObjectName("header")
         v.addWidget(header)
         v.addSpacing(10)
@@ -155,11 +155,29 @@ class LoginUI(QWidget):
         grid.setContentsMargins(20, 16, 20, 16)
         grid.setVerticalSpacing(14)
         
-        card_title = QLabel("Logo or name?")
-        card_title.setObjectName("cardTitle")
-        card_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_container = QWidget()
+        logo_container.setStyleSheet("background: transparent;")
+        box = QVBoxLayout(logo_container)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(4)
+        box.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        card_title = QLabel()
         grid.addWidget(card_title, 0, 0, 1, 2)
-        grid.setRowStretch(1, 1)
+        
+        pixmap = QPixmap("logo.png")
+        scaled_pixmap = pixmap.scaled(300, 120, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        card_title.setPixmap(scaled_pixmap)
+        card_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        name_lbl = QLabel("MindSpark")
+        name_lbl.setObjectName("cardTitle")
+        name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        box.addWidget(card_title)
+        box.addWidget(name_lbl)
+
+        grid.addWidget(logo_container, 0, 0, 1, 2)
         
         for i, (label, widget) in enumerate(rows, start=2):
             lbl = QLabel(label)
@@ -284,7 +302,8 @@ if __name__ == "__main__":
 
     window = LoginUI()
     window.resize(*WINDOW_SIZE)
-    window.setWindowTitle("Quiz App")
+    window.setWindowTitle("MindSpark")
+    window.setWindowIcon(QIcon(str("logo.png")))
     window.logged_in.connect(lambda u, r: print("Logged in:", u, r))
     window.show()
 
