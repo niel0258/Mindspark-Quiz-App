@@ -2,6 +2,7 @@ import sys
 import os
 import json
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication,
     QFrame,
@@ -24,6 +25,7 @@ class QuizResultWindow(QMainWindow):
     def __init__(self, username="student", quiz_id=1):
         super().__init__()
         self.setWindowTitle("Quiz Results")
+        self.setWindowIcon(QIcon(str("logo.png")))
         self.resize(1280, 720)
         self.setStyleSheet(st.MAIN_WINDOW)
 
