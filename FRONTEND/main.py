@@ -1,6 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QStackedWidget, QMessageBox, QWidget, QVBoxLayout, QPushButton, QLabel, QScrollArea, QHBoxLayout
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 
 from pathlib import Path
 backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
@@ -24,7 +25,8 @@ class MainApp(QApplication):
 
         self.stack = QStackedWidget()
         self.stack.resize(1280, 720)
-        self.stack.setWindowTitle("Quiz Platform")
+        self.stack.setWindowTitle("MindSpark")
+        self.stack.setWindowIcon(QIcon(str("logo.png")))
 
         self.login_ui = LoginUI()
         self.login_ui.logged_in.connect(self.handle_login)
