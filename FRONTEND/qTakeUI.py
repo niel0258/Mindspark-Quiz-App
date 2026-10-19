@@ -2,6 +2,7 @@ import sys
 import csv
 from pathlib import Path
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QLabel, QPushButton, QRadioButton, QFrame, QButtonGroup, QScrollArea, QMessageBox
@@ -18,6 +19,7 @@ class QuizApp(QMainWindow):
     def __init__(self, quiz_id=1, username="student"):
         super().__init__()
         self.setWindowTitle("Quiz Taking")
+        self.setWindowIcon(QIcon(str("logo.png")))
         self.resize(1280, 720)
         self.setObjectName("root")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
