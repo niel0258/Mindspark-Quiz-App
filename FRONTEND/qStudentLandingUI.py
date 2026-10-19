@@ -1,7 +1,7 @@
 import sys
 import os
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QTransform
+from PyQt6.QtGui import QPixmap, QTransform, QIcon
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
     QLabel, QPushButton, QComboBox, QFrame
@@ -50,6 +50,7 @@ class StudentQuizLandingUI(QWidget):
     def __init__(self, username="student"):
         super().__init__()
         self.setWindowTitle("Student Quiz Platform")
+        self.setWindowIcon(QIcon(str("logo.png")))
         self.setFixedSize(*WINDOW_SIZE)
         self.username = username
         
