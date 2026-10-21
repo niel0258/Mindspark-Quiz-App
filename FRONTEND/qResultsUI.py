@@ -240,10 +240,8 @@ class QuizResultWindow(QMainWindow):
         scroll_layout.setContentsMargins(0, 5, 0, 5)
         scroll_layout.setSpacing(15)
 
-        # Populate Question Cards (Fallback mock data if answers list is empty)
-        items_to_render = answers if answers else [
-            {"type": "Quiz type", "points": "points", "question": "QUESTION", "choices": ["Choice", "Choice", "Choice", "Choice"]}
-        ]
+        # Populate Question Cards
+        items_to_render = answers if answers else []
 
         for item in items_to_render:
             q_box = QFrame()
@@ -253,14 +251,16 @@ class QuizResultWindow(QMainWindow):
 
             # Subheader inside question card
             header_sub = QHBoxLayout()
-            q_type = QLabel(item.get("type", "Multiple Choice"))
+            q_type = QLabel(item.get("type", "Question"))
             q_type.setStyleSheet("color: white; font-weight: bold; font-size: 11px; background-color: #581414; padding: 2px 6px; border-radius: 4px;")
-            q_pts = QLabel(str(item.get("points", "1 pt")))
-            q_pts.setStyleSheet("color: white; font-weight: bold; font-size: 11px; background-color: #581414; padding: 2px 6px; border-radius: 4px;")
+            
+            is_correct = item.get("is_correct", False)
+            status_lbl = QLabel("✔ Correct" if is_correct else "✖ Incorrect")
+            status_lbl.setStyleSheet(f"color: {'#27ae60' if is_correct else '#c0392b'}; font-weight: bold; font-size: 12px;")
 
             header_sub.addWidget(q_type)
             header_sub.addStretch()
-            header_sub.addWidget(q_pts)
+            header_sub.addWidget(status_lbl)
             q_box_layout.addLayout(header_sub)
 
             # Question Text
@@ -268,26 +268,39 @@ class QuizResultWindow(QMainWindow):
             q_text.setStyleSheet("color: black; font-size: 16px; font-weight: bold; margin-top: 5px; margin-bottom: 5px; border: none;")
             q_box_layout.addWidget(q_text)
 
-            # Retrieve choice list safely
-            choices_list = item.get("choices") or item.get("options") or []
-            if not choices_list and "selected_option" in item:
-                choices_list = [f"Selected: {item.get('selected_option')}", f"Correct: {item.get('correct_option')}"]
+            selected = str(item.get("selected_option", "None"))
+            correct = str(item.get("correct_option", "None"))
 
-            # Choice Items
-            for choice in choices_list:
-                c_pill = QLabel(f"  ⚪  {choice}")
-                c_pill.setStyleSheet("""
+            # Display Selected Answer Pill
+            sel_pill = QLabel(f"  Your Answer:  {selected}")
+            sel_pill.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {'#d4edda' if is_correct else '#f8d7da'};
+                    color: {'#155724' if is_correct else '#721c24'};
+                    font-size: 13px;
+                    font-weight: bold;
+                    border-radius: 10px;
+                    padding: 6px;
+                    margin-top: 2px;
+                }}
+            """)
+            q_box_layout.addWidget(sel_pill)
+
+            # Display Correct Answer Pill if the student was wrong
+            if not is_correct:
+                corr_pill = QLabel(f"  Correct Answer:  {correct}")
+                corr_pill.setStyleSheet("""
                     QLabel {
-                        background-color: #f0f0f0;
-                        color: black;
-                        font-size: 12px;
-                        border-radius: 12px;
+                        background-color: #d4edda;
+                        color: #155724;
+                        font-size: 13px;
+                        font-weight: bold;
+                        border-radius: 10px;
                         padding: 6px;
                         margin-top: 2px;
-                        border: none;
                     }
                 """)
-                q_box_layout.addWidget(c_pill)
+                q_box_layout.addWidget(corr_pill)
 
             scroll_layout.addWidget(q_box)
 
@@ -306,7 +319,7 @@ class QuizResultWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def _fetch_latest_result(self, username, quiz_id):
-        """Directly scans and parses student result JSON files exported by qTakeUI."""
+        """Finds and parses the newest student result JSON file by modification time."""
         try:
             if not os.path.exists(RESULTS_DIR):
                 return {}
@@ -314,41 +327,33 @@ class QuizResultWindow(QMainWindow):
             clean_username = username.strip().lower()
             files = os.listdir(RESULTS_DIR)
 
-            # Match files matching username and quiz_id (handles multiple naming patterns)
             matching_files = [
-                f for f in files
-                if clean_username in f.lower() and (f"_quiz_{quiz_id}_" in f.lower() or f"_quiz{quiz_id}_" in f.lower() or f"quiz_{quiz_id}" in f.lower() or f"quiz{quiz_id}" in f.lower())
+                os.path.join(RESULTS_DIR, f) for f in files
+                if clean_username in f.lower() and str(quiz_id) in f
             ]
-
-            # Fallback: if specific pattern fails, look for files containing username and quiz_id integer
-            if not matching_files:
-                matching_files = [
-                    f for f in files
-                    if clean_username in f.lower() and str(quiz_id) in f
-                ]
 
             if not matching_files:
                 return {}
 
-            matching_files.sort(reverse=True)
-            latest_filepath = os.path.join(RESULTS_DIR, matching_files[0])
+            # Sort strictly by file modification time (newest first)
+            matching_files.sort(key=lambda filepath: os.path.getmtime(filepath), reverse=True)
+            latest_filepath = matching_files[0]
 
             with open(latest_filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 
-                # Convert answers dictionary {"0": {...}, "1": {...}} to a list if necessary
                 raw_answers = data.get("answers", [])
                 if isinstance(raw_answers, dict):
                     data["answers"] = list(raw_answers.values())
                 
                 return data
         except Exception as e:
-            print(f"Error reading result file directly in results UI: {e}")
+            print(f"Error reading result file in results UI: {e}")
             return {}
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = QuizResultWindow(username="student", quiz_id=1)
     window.show()
     sys.exit(app.exec())
+
