@@ -8,13 +8,13 @@ from PyQt6.QtWidgets import (
 )
 
 from pathlib import Path
-backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+script_dir = Path(__file__).resolve().parent
+backend_dir = script_dir / ".." / "BACKEND"
 sys.path.insert(0, str(backend_dir))
+
 
 import styles as st
 from database import get_all_quizzes
-
-WINDOW_SIZE = (1280, 720)
 
 TRANSLATIONS = {
     "English": {
@@ -49,11 +49,11 @@ TRANSLATIONS = {
 class StudentQuizLandingUI(QWidget):
     def __init__(self, username="student"):
         super().__init__()
-        script_dir = os.path.dirname(os.path.abspath(__file__))   
 
         self.setWindowTitle("Student Quiz Platform")
-        self.setWindowIcon(QIcon(os.path.join(script_dir, "logo.png")))
-        self.setFixedSize(*WINDOW_SIZE)
+        self.setWindowIcon(QIcon(str(script_dir / "logo.png")))
+        self.setMinimumHeight(720)
+        self.setMinimumWidth(1280)
         self.username = username
         
         self.setObjectName("mainContainer")
@@ -170,8 +170,9 @@ class StudentQuizLandingUI(QWidget):
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        image_path = os.path.join(script_dir, "dice.png")
-        pixmap = QPixmap(image_path)
+        image_path = script_dir / "dice.png"
+        pixmap = QPixmap(str(image_path))
+
         if not pixmap.isNull():
             transform = QTransform().rotate(15)
             scaled_pixmap = pixmap.transformed(transform, Qt.TransformationMode.SmoothTransformation).scaled(

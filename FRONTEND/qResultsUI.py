@@ -15,8 +15,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
-backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+script_dir = Path(__file__).resolve().parent
+backend_dir = script_dir / ".." / "BACKEND"
 sys.path.insert(0, str(backend_dir))
 
 import styles as st
@@ -27,7 +27,7 @@ class QuizResultWindow(QMainWindow):
     def __init__(self, username="student", quiz_id=1):
         super().__init__()
         self.setWindowTitle("Quiz Results")
-        self.setWindowIcon(QIcon(str("logo.png")))
+        self.setWindowIcon(QIcon(str(script_dir / "logo.png")))
         self.resize(1280, 720)
         if hasattr(st, "MAIN_WINDOW"):
           self.setStyleSheet(st.MAIN_WINDOW)
@@ -122,7 +122,7 @@ class QuizResultWindow(QMainWindow):
         
         # Load and display Chart.png
         chart_icon = QLabel()
-        chart_pixmap = QPixmap("Chart.png")
+        chart_pixmap = QPixmap(str(script_dir / "Chart.png"))
         if not chart_pixmap.isNull():
             # Scale image smoothly to fit inside the banner height
             chart_icon.setPixmap(chart_pixmap.scaled(60, 60, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))

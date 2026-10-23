@@ -23,12 +23,13 @@ from PyQt6.QtWidgets import (
     QStackedWidget,
     QGraphicsDropShadowEffect,
     QMessageBox,
+    QSizePolicy
 )
 
 backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
 sys.path.insert(0, str(backend_dir))
 
-from users import verify_user, create_user
+from users import verify_user, create_user,initialize_storage
 import styles as st
 
 WINDOW_SIZE = (1280, 720)
@@ -143,7 +144,9 @@ class LoginUI(QWidget):
 
         card = QFrame()
         card.setObjectName("card")
-        card.setFixedSize(380, 290)
+        card.setMinimumWidth(300)
+        card.setMaximumWidth(480)
+        card.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         
         glow = QGraphicsDropShadowEffect(card)
         glow.setBlurRadius(20)
@@ -165,7 +168,8 @@ class LoginUI(QWidget):
         card_title = QLabel()
         grid.addWidget(card_title, 0, 0, 1, 2)
         
-        pixmap = QPixmap("logo.png")
+        logo_path = script_dir / "logo.png"
+        pixmap = QPixmap(str(logo_path))
         scaled_pixmap = pixmap.scaled(300, 120, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         card_title.setPixmap(scaled_pixmap)
         card_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -296,7 +300,7 @@ class LoginUI(QWidget):
 
 
 if __name__ == "__main__":
-    from users import initialize_storage
+
     initialize_storage()   
     app = QApplication(sys.argv)
 
