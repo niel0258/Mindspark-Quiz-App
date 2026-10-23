@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 
 from pathlib import Path
+script_dir = Path(__file__).resolve().parent
 backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
 sys.path.insert(0, str(backend_dir))
 
@@ -26,7 +27,7 @@ class MainApp(QApplication):
         self.stack = QStackedWidget()
         self.stack.resize(1280, 720)
         self.stack.setWindowTitle("MindSpark")
-        self.stack.setWindowIcon(QIcon(str("logo.png")))
+        self.stack.setWindowIcon(QIcon(str(script_dir / "logo.png")))
 
         self.login_ui = LoginUI()
         self.login_ui.logged_in.connect(self.handle_login)
