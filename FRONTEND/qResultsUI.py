@@ -106,7 +106,7 @@ class QuizResultWindow(QMainWindow):
         progress_layout.setContentsMargins(25, 25, 25, 25)
         progress_layout.setSpacing(15)
 
-        progress_title = QLabel("Your Progress")
+        progress_title = QLabel("Results")
         progress_title.setStyleSheet("color: white; font-size: 22px; font-weight: bold; border: none;")
         progress_layout.addWidget(progress_title)
 
@@ -198,7 +198,7 @@ class QuizResultWindow(QMainWindow):
         # RIGHT CARD: Review your Answers
         # ==========================================
         review_card = QFrame()
-        review_card.setFixedSize(400, 500)
+        review_card.setFixedSize(750, 500)
         review_card.setStyleSheet("""
             QFrame {
                 background-color: #581414;
