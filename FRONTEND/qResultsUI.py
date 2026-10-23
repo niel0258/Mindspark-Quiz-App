@@ -147,7 +147,7 @@ class QuizResultWindow(QMainWindow):
 
         correct_left = QLabel("✔ Correct")
         correct_left.setStyleSheet("color: #27ae60; font-size: 15px; font-weight: bold; border: none;")
-        correct_right = QLabel(f"Total of correct #{correct_count}")
+        correct_right = QLabel(f"Total of correct: {correct_count}")
         correct_right.setStyleSheet("color: black; font-size: 13px; border: none;")
 
         correct_layout.addWidget(correct_left)
@@ -164,7 +164,7 @@ class QuizResultWindow(QMainWindow):
 
         incorrect_left = QLabel("✖ Incorrect")
         incorrect_left.setStyleSheet("color: #c0392b; font-size: 15px; font-weight: bold; border: none;")
-        incorrect_right = QLabel(f"Total of incorrect #{incorrect_count}")
+        incorrect_right = QLabel(f"Total of incorrect: {incorrect_count}")
         incorrect_right.setStyleSheet("color: black; font-size: 13px; border: none;")
 
         incorrect_layout.addWidget(incorrect_left)
