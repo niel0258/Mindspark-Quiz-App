@@ -137,9 +137,9 @@ class StudentQuizLandingUI(QWidget):
         left_hero_block.setSpacing(15)
         left_hero_block.addStretch()
         
-        self.quizzes_sub_label = QLabel("Quizzes to Take")
-        self.quizzes_sub_label.setStyleSheet("color: #ca8a04; font-size: 12px; font-weight: bold; background: transparent;")
-        left_hero_block.addWidget(self.quizzes_sub_label)
+        #self.quizzes_sub_label = QLabel("Quizzes to Take")
+        #self.quizzes_sub_label.setStyleSheet("color: #ca8a04; font-size: 12px; font-weight: bold; background: transparent;")
+        #left_hero_block.addWidget(self.quizzes_sub_label)
         
         self.hero_title = QLabel("Think\nDifferent.")
         self.hero_title.setStyleSheet("font-size: 90px; font-weight: 900; color: #FFFFFF; background: transparent; line-height: 1.1;")
@@ -188,7 +188,8 @@ class StudentQuizLandingUI(QWidget):
         root_layout.addLayout(body_layout)
 
     def load_quizzes_view(self):
-        self.hero_title.setText("Quizzes to Take")
+        self.hero_title.setText("Quizzes to\nTake")
+        self.hero_title.setStyleSheet("font-size: 90px; font-weight: 900; color: #FFFFFF; background: transparent; line-height: 1.1;")
         quizzes = get_all_quizzes()
         if quizzes:
             desc_text = "\n".join([f"• Quiz ID {q[0]}: {q[1]} ({q[2]})" for q in quizzes])
