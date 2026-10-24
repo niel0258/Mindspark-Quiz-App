@@ -4,10 +4,12 @@ import re
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication, QButtonGroup, QComboBox, QFrame, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget, QScrollArea, QMessageBox, QFileDialog
+    QLineEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget, QScrollArea, QMessageBox
 )
+from PyQt6.QtGui import QIcon
 
 from pathlib import Path
+script_dir = Path(__file__).resolve().parent
 backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
 sys.path.insert(0, str(backend_dir))
 
@@ -44,6 +46,7 @@ class QuizEditor(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet(st.MAIN_WINDOW)
         self.setWindowTitle(quiz_name)
+        self.setWindowIcon(QIcon(str(script_dir / "logo.png")))
         self.resize(1280, 720)
         self.username = username
 
@@ -435,6 +438,9 @@ class QuizEditor(QWidget):
         initialize_quiz_storage()
         success = save_quiz_to_db(quiz_name, subject_name, self.username, questions_data)
         if success:
+            QMessageBox.information(self,"Success","Quiz Saved successfully")
+            self.close()
+            """
             default_filename = re.sub(r'[\\/*?:"<>|]', "", f"{quiz_name}_{subject_name}").strip().replace(" ", "_") + ".csv"
             file_path, _ = QFileDialog.getSaveFileName(self, "Export Quiz to CSV", default_filename, "CSV Files (*.csv)")
             if file_path:
@@ -450,6 +456,7 @@ class QuizEditor(QWidget):
                     self.close()
                 except Exception as e:
                     QMessageBox.critical(self, "Export Error", f"Failed to export CSV: {e}")
+                    """
         else:
             QMessageBox.critical(self, "Database Error", "Failed to save quiz to database.")
 

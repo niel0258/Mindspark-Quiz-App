@@ -5,7 +5,7 @@ from PyQt6.QtGui import QIcon
 
 from pathlib import Path
 script_dir = Path(__file__).resolve().parent
-backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
+backend_dir = script_dir / ".." / "BACKEND"
 sys.path.insert(0, str(backend_dir))
 
 import styles as st

@@ -25,7 +25,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QSizePolicy
 )
-
+script_dir = Path(__file__).resolve().parent
 backend_dir = Path(__file__).resolve().parent / ".." / "BACKEND"
 sys.path.insert(0, str(backend_dir))
 
@@ -109,6 +109,7 @@ class LoginUI(QWidget):
         outer.setContentsMargins(0, 0, 0, 0)
         self.pages = QStackedWidget()
         outer.addWidget(self.pages)
+        self.setWindowIcon(QIcon(str(script_dir / "logo.png")))
 
         self.pages.addWidget(self._create_register_page())  
         self.pages.addWidget(self._create_login_page())   
