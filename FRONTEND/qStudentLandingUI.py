@@ -207,7 +207,7 @@ class StudentQuizLandingUI(QWidget):
             return
         self.nav_home.setText(lang_data["home"])
         self.nav_quizzes.setText(lang_data["quizzes"])
-        self.quizzes_sub_label.setText(lang_data["quizzes_sub"])
+        #self.quizzes_sub_label.setText(lang_data["quizzes_sub"])
         self.hero_title.setText(lang_data["title"])
         self.hero_desc.setText(lang_data["desc"])
         self.play_btn.setText(lang_data["play"])
