@@ -181,6 +181,7 @@ class TeacherQuizLandingUI(QWidget):
 
     def load_quizzes_view(self):
         self.hero_title.setText("Quizzes Made")
+        self.hero_title.setStyleSheet("font-size: 87px; font-weight: 900; color: #FFFFFF; background: transparent; line-height: 1.1;")
         quizzes = get_all_quizzes()
         if quizzes:
             desc_text = "\n".join([f"• {q[1]} ({q[2]}) [Creator: {q[3]}]" for q in quizzes])
