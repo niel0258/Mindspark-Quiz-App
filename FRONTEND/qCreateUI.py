@@ -1,12 +1,12 @@
 import sys
 import csv
 import re
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QApplication, QButtonGroup, QComboBox, QFrame, QHBoxLayout, QLabel,
     QLineEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget, QScrollArea, QMessageBox
 )
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QValidator
 
 from pathlib import Path
 script_dir = Path(__file__).resolve().parent
@@ -15,7 +15,7 @@ sys.path.insert(0, str(backend_dir))
 
 from question import MultipleChoice, TrueOrFalse
 import styles as st
-from database import save_quiz_to_db, initialize_quiz_storage
+from database import save_quiz_to_db, initialize_quiz_storage, get_quiz_from_db, update_quiz_in_db
 
 TYPE_NAMES = {
     "Multiple_Choice" : "Multiple Choice",
@@ -26,6 +26,9 @@ QUESTION_CLASSES  = {
     "Multiple_Choice" : MultipleChoice,
     "True_or_False" : TrueOrFalse
 }
+
+SUBJECTS = ["English", "Math", "Science", "Computer"]
+
 
 def pill(text):
     b = QPushButton(text)
@@ -39,9 +42,15 @@ def round_btn(text="X"):
     b.setCursor(Qt.CursorShape.PointingHandCursor)
     return b
 
+class UpperValidator(QValidator):
+    def validate(self, text, pos):
+        return QValidator.State.Acceptable, text[:1].upper() + text[1:], pos
+
 class QuizEditor(QWidget):
-    def __init__(self, quiz_name="Quiz name", subject="Subject name", username="teacher"):
+    saved = pyqtSignal()
+    def __init__(self, quiz_name="Quiz name", subject="English", username="teacher", quiz_id = None):
         super().__init__()
+        self.quiz_id = quiz_id        
         self.setObjectName("root")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet(st.MAIN_WINDOW)
@@ -76,6 +85,8 @@ class QuizEditor(QWidget):
 
         self.questions = [self.new_question("Multiple_Choice")]
         self.load_question(0)
+        if quiz_id is not None:
+            self.load_quiz(quiz_id)
 
     def add_option(self):
         if (len(self.option_edits) >= self.maxOptions):
@@ -98,6 +109,7 @@ class QuizEditor(QWidget):
         option_name.setReadOnly(fixed)
         option_name.setStyleSheet(st.INPUT_FIELD)
         option_name.setPlaceholderText("Insert Option")
+        option_name.setValidator(UpperValidator(self))
         option_name.editingFinished.connect(self.save_current_question)
         option_name.setCursor(Qt.CursorShape.IBeamCursor)
         
@@ -169,13 +181,13 @@ class QuizEditor(QWidget):
         q = QUESTION_CLASSES[qtype]()
         q.qType = qtype
         q.qTitle = self.quiz_name_edit.text()
-        q.subj_name = self.subject_edit.text()
+        q.subj_name = self.subject_edit.currentText()
         return q
  
     def save_current_question(self):
         q = self.questions[self.current]
         q.qTitle = self.quiz_name_edit.text()
-        q.subj_name = self.subject_edit.text()
+        q.subj_name = self.subject_edit.currentText()
         q.question = self.question_edit.text()
         q.points = self.points.value()
         if q.qType == "Multiple_Choice":
@@ -208,6 +220,31 @@ class QuizEditor(QWidget):
  
         self._update_add_option_state()
         self.refresh_nav()
+        
+    def load_quiz(self, quiz_id):
+        data = get_quiz_from_db(quiz_id)
+        if data is None:
+            QMessageBox.warning(self, "Not found", "This quiz no longer exists.")
+            return
+        self.quiz_name_edit.setText(data["quiz_name"])
+        if isinstance(self.subject_edit, QComboBox):
+            idx = self.subject_edit.findText(data["subject"])
+            self.subject_edit.setCurrentIndex(idx if idx >= 0 else 0)
+        else:
+            self.subject_edit.setText(data["subject"])
+
+        self.questions = []
+        for qd in data["questions"]:
+            q = self.new_question(qd["qType"])
+            q.question = qd["question"]
+            q.points = qd["points"]
+            q.choices = qd["choices"]
+            q.right_answer = qd["right_answer"]
+            self.questions.append(q)
+        if not self.questions:
+            self.questions = [self.new_question("Multiple_Choice")]
+        self.load_question(0)
+        self.setWindowTitle(f"Editing: {data['quiz_name']}")
  
     def add_question(self):
         self.save_current_question()
@@ -289,9 +326,12 @@ class QuizEditor(QWidget):
         row2.setContentsMargins(0, 0, 0, 0)
         lbl_s = QLabel("Course/Subject:")
         lbl_s.setStyleSheet("color: white; font-weight: bold;")
-        self.subject_edit = QLineEdit(subject)
-        self.subject_edit.setStyleSheet(st.INPUT_FIELD)
-        self.subject_edit.editingFinished.connect(self.save_current_question)
+        self.subject_edit = QComboBox()
+        self.subject_edit.addItems(SUBJECTS)
+        self.subject_edit.setStyleSheet(st.COMBOBOX)
+        idx = self.subject_edit.findText(subject)
+        self.subject_edit.setCurrentIndex(idx if idx >=0 else 0)
+        self.subject_edit.currentTextChanged.connect(self.save_current_question)
         row2.addWidget(lbl_s)
         row2.addWidget(self.subject_edit, 1)
 
@@ -337,6 +377,7 @@ class QuizEditor(QWidget):
         self.question_edit = QLineEdit()
         self.question_edit.setStyleSheet(f"QLineEdit {{ background: transparent; border: none; font-size: 28px; font-weight: bold; color: {st.Colors.TEXT_DARK}; }}")
         self.question_edit.setPlaceholderText("Insert Question")
+        self.question_edit.setValidator(UpperValidator(self))
         self.question_edit.editingFinished.connect(self.save_current_question)
 
         q_wrap = QHBoxLayout()
@@ -414,7 +455,7 @@ class QuizEditor(QWidget):
     def finish_and_export(self):
         self.save_current_question()
         quiz_name = self.quiz_name_edit.text().strip()
-        subject_name = self.subject_edit.text().strip()
+        subject_name = self.subject_edit.currentText().strip()
 
         if not quiz_name or not subject_name:
             QMessageBox.warning(self, "Warning", "Please provide a Quiz Name and Subject/Course.")
@@ -436,9 +477,13 @@ class QuizEditor(QWidget):
             })
 
         initialize_quiz_storage()
-        success = save_quiz_to_db(quiz_name, subject_name, self.username, questions_data)
+        if self.quiz_id is None:
+            success = save_quiz_to_db(quiz_name, subject_name, self.username, questions_data)
+        else:
+            success = update_quiz_in_db(self.quiz_id, quiz_name, subject_name, questions_data)
         if success:
-            QMessageBox.information(self,"Success","Quiz Saved successfully")
+            QMessageBox.information(self, "Success", "Quiz Saved successfully")
+            self.saved.emit()
             self.close()
             """
             default_filename = re.sub(r'[\\/*?:"<>|]', "", f"{quiz_name}_{subject_name}").strip().replace(" ", "_") + ".csv"
