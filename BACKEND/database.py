@@ -63,6 +63,63 @@ def save_quiz_to_db(quiz_name, subject_name, creator, questions_data):
     finally:
         conn.close()
 
+def get_quiz_from_db(quiz_id):
+    """Quiz in the shape QuizEditor.load_quiz() expects, or None if it doesn't exist."""
+    conn = get_connection()
+    try:
+        info = conn.execute(
+            "SELECT quiz_name, subject_name FROM quizzes WHERE id = ?", (quiz_id,)
+        ).fetchone()
+        if not info:
+            return None
+        rows = conn.execute(
+            """SELECT q_type, question, points, choices, correct_answer
+               FROM questions WHERE quiz_id = ? ORDER BY id""",
+            (quiz_id,)
+        ).fetchall()
+        return {
+            "quiz_name": info[0],
+            "subject": info[1],
+            "questions": [
+                {"qType": r[0], "question": r[1], "points": r[2],
+                 "choices": json.loads(r[3]), "right_answer": r[4]}
+                for r in rows
+            ],
+        }
+    finally:
+        conn.close()
+ 
+def update_quiz_in_db(quiz_id, quiz_name, subject_name, questions_data, creator=None):
+    """Replace a quiz's name, subject and questions in one transaction.
+    Pass creator=username so a teacher can only edit their own quiz."""
+    conn = get_connection()
+    try:
+        with conn:
+            cursor = conn.cursor()
+            if creator is None:
+                cursor.execute("UPDATE quizzes SET quiz_name = ?, subject_name = ? WHERE id = ?",
+                               (quiz_name, subject_name, quiz_id))
+            else:
+                cursor.execute("UPDATE quizzes SET quiz_name = ?, subject_name = ? WHERE id = ? AND creator = ?",
+                               (quiz_name, subject_name, quiz_id, creator))
+            if cursor.rowcount == 0:
+                return False          # quiz not found, or not owned by this teacher
+ 
+            cursor.execute("DELETE FROM questions WHERE quiz_id = ?", (quiz_id,))
+            for q in questions_data:
+                cursor.execute(
+                    """INSERT INTO questions (quiz_id, q_type, question, points, choices, correct_answer)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    (quiz_id, q["qType"], q["question"], q["points"],
+                     json.dumps(q.get("choices", [])), q["right_answer"])
+                )
+        return True
+    except Exception as e:
+        print(f"Error updating quiz: {e}")
+        return False
+    finally:
+        conn.close()
+
 def get_all_quizzes():
     conn = get_connection()
     try:
@@ -81,7 +138,7 @@ def get_quiz_details(quiz_id):
             return None, []
         
         rows = cursor.execute(
-            "SELECT q_type, question, points, choices, correct_answer FROM questions WHERE quiz_id = ?",
+            "SELECT q_type, question, points, choices, correct_answer FROM questions WHERE quiz_id = ? ORDER by id",
             (quiz_id,)
         ).fetchall()
         
