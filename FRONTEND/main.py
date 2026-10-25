@@ -65,6 +65,7 @@ class MainApp(QApplication):
 
         dialog = QWidget()
         dialog.setWindowTitle("Quizzes List")
+        dialog.setWindowIcon(QIcon(str(script_dir / "logo.png")))
         dialog.resize(500, 400)
         dialog.setStyleSheet(st.MAIN_WINDOW)
         v = QVBoxLayout(dialog)
@@ -92,7 +93,8 @@ class MainApp(QApplication):
             if role == "student":
                 btn.clicked.connect(lambda checked, qid=q_id, un=username, d=dialog: self.start_taking_quiz(un, qid, d))
             else:
-                btn.clicked.connect(lambda checked, qid=q_id, un=username, d=dialog: self.start_taking_quiz(un, qid, d))
+                btn.setText(f"Edit  |  Quiz: {q_name}  |  Subject: {subj}")
+                btn.clicked.connect(lambda checked, qid=q_id, un=username, d=dialog: self.open_quiz_editor(un, qid, d))
             
             row_layout.addWidget(btn, 1)
             
@@ -115,12 +117,19 @@ class MainApp(QApplication):
         self.creator_win = QuizEditor("", "", username)
         self.creator_win.show()
         self.creator_win.destroyed.connect(lambda: self.reset_to_landing(username, "Teacher"))
-
+    
+    def open_quiz_editor(self, username, quiz_id, dialog_to_close):
+        dialog_to_close.close()
+        self.creator_win = QuizEditor("", "", username, quiz_id=quiz_id)
+        self.creator_win.saved.connect(lambda: self.show_quizzes_popup(username, "teacher"))
+        self.creator_win.show()
+    
     def start_taking_quiz(self, username, quiz_id, dialog_to_close):
         dialog_to_close.close()
         self.take_win = QuizApp(quiz_id=quiz_id, username=username)
         self.take_win.quiz_submitted.connect(self.show_results)
         self.take_win.show()
+        
 
     def show_results(self, username, quiz_id):
         self.result_win = QuizResultWindow(username=username, quiz_id=quiz_id)
