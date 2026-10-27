@@ -258,6 +258,36 @@ SPINBOX = f"""
     }}
 """
 
+POOR = """
+    QLabel {
+        font-family: 'Segoe UI', -apple-system, sans-serif;
+        font-size: 15px;
+        font-weight: bold;
+        color: #C0392B; 
+        padding-left: 14px;
+    }
+"""
+
+FAIR = """
+    QLabel {
+        font-family: 'Segoe UI', -apple-system, sans-serif;
+        font-size: 15px;
+        font-weight: bold;
+        color: #D4AC0D; 
+        padding-left: 14px;
+    }
+"""
+
+EXCELLENT = """
+    QLabel {
+        font-family: 'Segoe UI', -apple-system, sans-serif;
+        font-size: 15px;
+        font-weight: bold;
+        color: #1E8449; 
+        padding-left: 14px;
+    }
+"""
+
 # --- Dynamic Helper Functions ---
 
 def option_frame(is_selected: bool) -> str:

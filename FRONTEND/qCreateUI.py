@@ -364,7 +364,7 @@ class QuizEditor(QWidget):
         
         self.points = QSpinBox()
         self.points.setStyleSheet(st.SPINBOX)
-        self.points.setRange(0, 1000)
+        self.points.setRange(1, 1000)
         self.points.setSuffix(" points")
         self.points.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
         self.points.setAlignment(Qt.AlignmentFlag.AlignRight)

@@ -120,6 +120,25 @@ class QuizResultWindow(QMainWindow):
         score_lbl = QLabel(f"{score} / {total_points}")
         score_lbl.setStyleSheet("color: black; font-size: 18px; font-weight: bold; border: none;")
         
+        #Test only on total points not equal to zero
+        score_perc = (score/total_points) * 100
+        score_asses = "" 
+        score_style = 0
+        
+        if (score_perc >= 90):
+            score_asses = "EXCELLENT"
+            score_style = st.EXCELLENT
+        elif (score_perc >= 75 and score_perc < 90):
+            score_asses = "FAIR"
+            score_style = st.FAIR        # Fixed
+        else:
+            score_asses = "POOR"
+            score_style = st.POOR        # Fixed
+
+        assesment_lbl = QLabel(score_asses)
+        assesment_lbl.setStyleSheet(score_style)
+
+        
         # Load and display Chart.png
         chart_icon = QLabel()
         chart_pixmap = QPixmap(str(script_dir / "Chart.png"))
@@ -134,6 +153,7 @@ class QuizResultWindow(QMainWindow):
         chart_icon.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
         score_banner_layout.addWidget(score_lbl)
+        score_banner_layout.addWidget(assesment_lbl)
         score_banner_layout.addStretch()
         score_banner_layout.addWidget(chart_icon)
         progress_layout.addWidget(score_banner)
